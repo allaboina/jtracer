@@ -1,0 +1,85 @@
+# =============================================================================
+# JTracer — local development (full private workspace)
+# Public subset is built via scripts/prepare-public-release.sh
+# =============================================================================
+
+# Local runtime data (SQLite, session DBs)
+data/
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Environment and machine-specific config
+.env
+.env.*
+!.env.example
+**/application-local.yml
+**/application-local.properties
+
+# Build artifacts
+target/
+build/
+dist/
+out/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# Logs and runtime output
+*.log
+logs/
+spring.log
+hs_err_pid*
+
+# Node / frontend (when added)
+node_modules/
+.npm/
+.pnpm-store/
+*.tsbuildinfo
+
+# Maven wrapper jar (optional — uncomment if not committing wrapper)
+# .mvn/wrapper/maven-wrapper.jar
+
+# Public release staging output (generated locally)
+public-release-staging/
+../jtracer-observability-engine/
+
+# Cursor / agent session artifacts
+.cursor/
+agent-transcripts/
+
+# Test coverage / reports (regenerated)
+coverage/
+.nyc_output/
+backend/target/
+
+# Temporary files
+*.tmp
+*.swp
+*~
+.cache/
+
+# Full implementation workspace only (not in public tree)
+backend/src/main/java/com/jtracer/collector/macos/Mac*.java
+backend/src/main/java/com/jtracer/service/*Impl.java

@@ -1,0 +1,6 @@
+COMMAND     PID      USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+Google      919   devuser   36u  IPv4 0x1234567890abcdef      0t0  TCP 10.0.0.220:64884->34.216.181.117:443 (ESTABLISHED)
+Cursor     3301   devuser   52u  IPv4 0xabcdef1234567890      0t0  TCP 127.0.0.1:54321->127.0.0.1:9229 (ESTABLISHED)
+node       5000   devuser   23u  IPv6 0xfedcba0987654321      0t0  TCP *:3000 (LISTEN)
+curl       4242   devuser    5u  IPv4 0x1122334455667788      0t0  TCP 10.0.0.220:65100->93.184.216.34:443 (ESTABLISHED)
+firefox    8001   devuser   88u  IPv6 0x9988776655443322      0t0  UDP [fe80::1%en0]:5353->[ff02::fb]:5353

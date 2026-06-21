@@ -1,0 +1,59 @@
+# Copy to backend/src/main/resources/application.yml for local development.
+# Never commit application-local.yml or real database paths with personal data.
+
+spring:
+  application:
+    name: jtracer-backend
+
+  datasource:
+    url: jdbc:sqlite:${jtracer.database.live-path}
+    driver-class-name: org.sqlite.JDBC
+
+  jpa:
+    open-in-view: false
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  address: 127.0.0.1
+  port: 8080
+
+jtracer:
+  app-version: 0.1.0-SNAPSHOT
+  capture-mode: LIVE
+
+  database:
+    live-path: ./data/jtracer-live.db
+    demo-path: ./data/jtracer-demo.db
+
+  retention:
+    days: 7
+    allowed-days:
+      - 1
+      - 7
+      - 30
+
+  polling:
+    process-metrics-seconds: 5
+    network-connections-seconds: 3
+    lan-scan-seconds: 60
+    system-health-seconds: 10
+
+  knowledge-base:
+    base-path: ../knowledge-base
+
+  collector:
+    auto-start: true
+
+  network:
+    resolve-dns: true
+    dns-timeout-ms: 1000

@@ -1,0 +1,5 @@
+    1     0   0.0  0.0   5936 /sbin/launchd
+  401     1   0.4  0.0   8032 /usr/libexec/logd
+  403     1   0.0  0.0   5440 /usr/libexec/UserEventAgent (System)
+ 2245   501  14.2  2.3 186368 /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+ 3301   501   8.5  1.1  90112 /Applications/Cursor.app/Contents/MacOS/Cursor
