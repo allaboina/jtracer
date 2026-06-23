@@ -466,7 +466,8 @@ Avoid privileged DaemonSet deployments unless the product pivots to enterprise o
 | Phase 1 — Core domain and database | ✅ Complete |
 | Phase 2 — macOS process collector | ✅ Complete |
 | Phase 3 — macOS network collector | ✅ Complete |
-| Phase 4 — LAN scanner | 🚧 Design approved ([PHASE4_DESIGN.md](./PHASE4_DESIGN.md)) |
+| Phase 4 — LAN scanner | ✅ Complete |
+| Phase 5 — Device identity engine | Planned |
 
 **Validated:** `mvn test` (unit), `mvn test -Plive-tests` (macOS live collectors).
 

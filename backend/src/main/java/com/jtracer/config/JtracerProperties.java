@@ -14,6 +14,7 @@ public class JtracerProperties {
     private final Polling polling = new Polling();
     private final KnowledgeBase knowledgeBase = new KnowledgeBase();
     private final Network network = new Network();
+    private final Lan lan = new Lan();
 
     public String getAppVersion() {
         return appVersion;
@@ -49,6 +50,10 @@ public class JtracerProperties {
 
     public Network getNetwork() {
         return network;
+    }
+
+    public Lan getLan() {
+        return lan;
     }
 
     public static class Database {
@@ -167,6 +172,37 @@ public class JtracerProperties {
 
         public void setDnsTimeoutMs(int dnsTimeoutMs) {
             this.dnsTimeoutMs = dnsTimeoutMs;
+        }
+    }
+
+    public static class Lan {
+
+        private boolean pingSeedEnabled = true;
+        private int pingTimeoutMs = 300;
+        private int maxPingWorkers = 20;
+
+        public boolean isPingSeedEnabled() {
+            return pingSeedEnabled;
+        }
+
+        public void setPingSeedEnabled(boolean pingSeedEnabled) {
+            this.pingSeedEnabled = pingSeedEnabled;
+        }
+
+        public int getPingTimeoutMs() {
+            return pingTimeoutMs;
+        }
+
+        public void setPingTimeoutMs(int pingTimeoutMs) {
+            this.pingTimeoutMs = pingTimeoutMs;
+        }
+
+        public int getMaxPingWorkers() {
+            return maxPingWorkers;
+        }
+
+        public void setMaxPingWorkers(int maxPingWorkers) {
+            this.maxPingWorkers = maxPingWorkers;
         }
     }
 

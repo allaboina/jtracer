@@ -17,7 +17,7 @@ JTracer correlates **system performance**, **outbound network connections**, and
 |-------|------------|--------|
 | **Process** | CPU, memory, RSS, disk, battery via host collectors | Phase 2 ✅ |
 | **Network** | TCP/UDP connections, reverse DNS, process correlation | Phase 3 ✅ |
-| **LAN** | ARP-based device discovery, online/offline tracking | Phase 4 🚧 |
+| **LAN** | ARP-based device discovery, online/offline tracking | Phase 4 ✅ |
 | **API + UI** | REST/WebSocket, React dashboard | Phases 6–8 |
 
 **Design principles:** local-first · metadata-only · adapter-based cross-platform · evidence-backed insights
@@ -135,7 +135,7 @@ jtracer-observability-engine/
 | 1 | Domain entities + Flyway schema | ✅ Complete |
 | 2 | macOS process collector | ✅ Complete |
 | 3 | macOS network collector | ✅ Complete |
-| 4 | LAN scanner (ARP, ping) | 🚧 Designed |
+| 4 | LAN scanner (ARP, ping) | ✅ Complete |
 | 5 | Device identity engine | Planned |
 | 6 | REST + WebSocket APIs | Planned |
 | 7 | Manual validation | Planned |

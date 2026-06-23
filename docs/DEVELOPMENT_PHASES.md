@@ -10,7 +10,7 @@
 | 1 | Core domain + database | ✅ Complete |
 | 2 | macOS process collector | ✅ Complete |
 | 3 | macOS network collector | ✅ Complete |
-| 4 | LAN scanner | 🚧 Design complete — implementation next |
+| 4 | LAN scanner | ✅ Complete |
 | 5 | Device identity engine | Planned |
 | 6 | Backend API | Planned |
 | 7 | Validation (pre-UI) | Planned |

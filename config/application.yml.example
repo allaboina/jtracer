@@ -6,8 +6,11 @@ spring:
     name: jtracer-backend
 
   datasource:
-    url: jdbc:sqlite:${jtracer.database.live-path}
+    url: jdbc:sqlite:${jtracer.database.live-path}?busy_timeout=30000
     driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1
+      minimum-idle: 1
 
   jpa:
     open-in-view: false
