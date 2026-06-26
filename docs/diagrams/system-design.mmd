@@ -1,6 +1,6 @@
-%% JTracer v2 — System Architecture
+%% JTracer v2 — System Architecture (updated June 2026)
 %% See docs/SYSTEM_DESIGN.md for narrative and implementation notes.
-%% MVP network visibility uses OS socket metadata (lsof), not deep packet capture.
+%% Collectors run on the host OS; API/UI may optionally run in Docker.
 
 flowchart TB
     subgraph futureK8s["Future Kubernetes Layer (planned)"]
@@ -8,83 +8,79 @@ flowchart TB
         k8sIngress["Ingress / Gateway"]
         k8sBackend["Backend API Deployment"]
         k8sFrontend["Frontend Deployment"]
-        k8sDB["PostgreSQL or SQLite PVC"]
+        k8sDB["PostgreSQL PVC"]
         k8sIngress --> k8sFrontend
         k8sIngress --> k8sBackend
         k8sBackend --> k8sDB
     end
 
-    subgraph dockerLayer["Docker Layer (optional — API, UI, DB only)"]
+    subgraph dockerLayer["Docker Layer (optional — API only)"]
         direction TB
-        dockerFrontend["React Dashboard Container"]
-        dockerBackend["Spring Boot API Container"]
-        dockerDB["SQLite Volume / DB Container"]
-        dockerFrontend -->|"REST / WebSocket"| dockerBackend
-        dockerBackend --> dockerDB
+        dockerBackend["Spring Boot API Container\nprofile: docker"]
+        dockerVolume["./data bind mount\njtracer-live.db"]
+        dockerKB["knowledge-base/ (ro)"]
+        dockerBackend --> dockerVolume
+        dockerBackend --> dockerKB
     end
 
-    subgraph macHost["macOS Host (primary development target)"]
+    subgraph macHost["macOS Host (primary target)"]
         direction TB
 
-        subgraph hostCollectors["Host-Native Collectors (must run on host OS)"]
+        subgraph hostCollectors["Host-Native Collectors ✅"]
             direction LR
-            packetCapture["Connection Metadata Collector\n(lsof / socket polling)"]
-            processResolver["Process Resolver\n(ps, df, pmset)"]
-            dnsResolver["DNS / Domain Resolver\n(reverse DNS, mDNS)"]
-            lanScanner["LAN Scanner\n(ping, arp)"]
+            processCollector["Process Collector\nps · df · pmset"]
+            networkCollector["Network Collector\nlsof · reverse DNS"]
+            lanScanner["LAN Scanner\narp · ping"]
         end
 
-        subgraph knowledgeBase["Device Identity Knowledge Base"]
+        subgraph knowledgeBase["Device Identity Knowledge Base ✅"]
             direction TB
-            ouiDb["OUI Vendor Database"]
-            deviceRules["Device Identity Rules"]
-            mdnsServices["mDNS Service Map"]
-            userLabels["User Device Labels"]
+            ouiDb["oui-vendors.json"]
+            deviceRules["device-rules.json"]
+            mdnsServices["mdns-services.json"]
+            userLabels["user_device_labels"]
         end
 
-        deviceIdentity["Device Identity Resolver"]
-        lanScanner --> deviceIdentity
-        ouiDb --> deviceIdentity
-        deviceRules --> deviceIdentity
-        mdnsServices --> deviceIdentity
-        userLabels --> deviceIdentity
-
-        packetCapture --> processResolver
-        packetCapture --> dnsResolver
+        identityResolver["Rule-Based Identity Resolver ✅"]
+        lanScanner --> identityResolver
+        ouiDb --> identityResolver
+        deviceRules --> identityResolver
+        mdnsServices --> identityResolver
+        userLabels --> identityResolver
     end
 
     subgraph appStack["Application Stack"]
         direction TB
-        springApi["Spring Boot Backend API\n(Java 21, REST + WebSocket)"]
-        sqlite["SQLite / Local Database"]
-        reactUi["React TypeScript Dashboard\n(Vite)"]
+        coordinator["Collector Coordinator\nscheduled polls"]
+        restApi["REST API /api/v1 🚧\nGET /system/health ✅"]
+        cors["CORS → localhost:5173"]
+        sqlite["SQLite jtracer-live.db\nFlyway V1–V4"]
+        reactUi["React Dashboard\n(planned Phase 8)"]
+        persistenceProviders["PersistenceProvider\nLocalSQLite (MVP)"]
     end
 
-    %% Host collectors → backend
-    processResolver -->|"normalized DTOs"| springApi
-    packetCapture -->|"connection snapshots"| springApi
-    dnsResolver -->|"domain identities"| springApi
-    deviceIdentity -->|"classified devices"| springApi
+    processCollector --> coordinator
+    networkCollector --> coordinator
+    lanScanner --> coordinator
+    identityResolver --> coordinator
 
-    %% Backend ↔ storage ↔ frontend
-    springApi <-->|"JPA / repositories"| sqlite
-    reactUi -->|"REST /api/v1, WS /ws/live"| springApi
+    coordinator -->|"persist snapshots"| sqlite
+    sqlite -->|"read models"| restApi
+    cors --> restApi
+    restApi -->|"JSON envelope"| reactUi
+    persistenceProviders -.-> sqlite
 
-    %% Docker wraps non-host components
-    dockerBackend -.->|"optional packaging"| springApi
-    dockerFrontend -.->|"optional packaging"| reactUi
-    dockerDB -.->|"optional packaging"| sqlite
+    dockerBackend -.->|"optional packaging"| restApi
 
-    %% Future K8s replaces or augments Docker for packaged deployment
     futureK8s -.->|"future productization"| dockerLayer
 
-    %% Styling
     classDef host fill:#e8f4ea,stroke:#2d6a4f,stroke-width:2px
     classDef docker fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px
     classDef future fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,stroke-dasharray: 5 5
     classDef app fill:#fef3c7,stroke:#d97706,stroke-width:2px
+    classDef done fill:#d1fae5,stroke:#059669,stroke-width:2px
 
-    class packetCapture,processResolver,dnsResolver,lanScanner,deviceIdentity,ouiDb,deviceRules,mdnsServices,userLabels host
-    class dockerFrontend,dockerBackend,dockerDB docker
+    class processCollector,networkCollector,lanScanner,identityResolver,ouiDb,deviceRules,mdnsServices,userLabels done
+    class dockerBackend,dockerVolume,dockerKB docker
     class k8sIngress,k8sBackend,k8sFrontend,k8sDB future
-    class springApi,sqlite,reactUi app
+    class coordinator,restApi,cors,sqlite,reactUi,persistenceProviders app

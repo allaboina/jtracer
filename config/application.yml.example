@@ -35,7 +35,7 @@ jtracer:
   capture-mode: LIVE
 
   database:
-    live-path: ./data/jtracer-live.db
+    live-path: ${JTRACER_DATABASE_LIVE_PATH:./data/jtracer-live.db}
     demo-path: ./data/jtracer-demo.db
 
   retention:
@@ -60,3 +60,8 @@ jtracer:
   network:
     resolve-dns: true
     dns-timeout-ms: 1000
+
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+      - http://127.0.0.1:5173

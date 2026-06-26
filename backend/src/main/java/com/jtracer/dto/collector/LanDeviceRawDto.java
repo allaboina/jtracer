@@ -10,6 +10,8 @@ public class LanDeviceRawDto {
     private String ipAddress;
     private String macAddress;
     private String hostname;
+    private String mdnsName;
+    private String vendor;
     private String adapterName;
     private Confidence confidence = Confidence.UNKNOWN;
 
@@ -35,6 +37,22 @@ public class LanDeviceRawDto {
 
     public void setHostname(String hostname) {
         this.hostname = hostname;
+    }
+
+    public String getMdnsName() {
+        return mdnsName;
+    }
+
+    public void setMdnsName(String mdnsName) {
+        this.mdnsName = mdnsName;
+    }
+
+    public String getVendor() {
+        return vendor;
+    }
+
+    public void setVendor(String vendor) {
+        this.vendor = vendor;
     }
 
     public String getAdapterName() {
