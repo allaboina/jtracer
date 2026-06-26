@@ -459,7 +459,32 @@ ARCHITECTURE_DECISIONS.md
 
 ---
 
-## 23. Final Architecture Principle
+## 23. Decision 21 — Persistence Provider Abstraction
+
+### Decision
+
+Storage access must be abstracted behind swappable persistence providers:
+
+```text
+PersistenceProvider
+├── LocalSQLitePersistenceProvider   # MVP/default
+├── TursoPersistenceProvider         # future cloud/sync option
+└── PostgresPersistenceProvider      # future team/server mode
+```
+
+### Reason
+
+MVP requires a zero-setup local file database, but productization may need edge sync (Turso) or multi-user server storage (Postgres) without rewriting collectors.
+
+### Implication
+
+- MVP implements `LocalSQLitePersistenceProvider` only (Spring Data JPA + Flyway + SQLite).
+- Turso and Postgres providers are documented and planned; not implemented in MVP.
+- Provider selection is configuration-driven (`jtracer.persistence.provider`).
+
+---
+
+## 24. Final Architecture Principle
 
 JTracer should be designed as a system first and an application second.
 

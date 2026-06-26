@@ -15,6 +15,7 @@ public class JtracerProperties {
     private final KnowledgeBase knowledgeBase = new KnowledgeBase();
     private final Network network = new Network();
     private final Lan lan = new Lan();
+    private final Cors cors = new Cors();
 
     public String getAppVersion() {
         return appVersion;
@@ -54,6 +55,10 @@ public class JtracerProperties {
 
     public Lan getLan() {
         return lan;
+    }
+
+    public Cors getCors() {
+        return cors;
     }
 
     public static class Database {
@@ -223,5 +228,18 @@ public class JtracerProperties {
 
     public Collector getCollector() {
         return collector;
+    }
+
+    public static class Cors {
+
+        private List<String> allowedOrigins = List.of("http://localhost:5173", "http://127.0.0.1:5173");
+
+        public List<String> getAllowedOrigins() {
+            return allowedOrigins;
+        }
+
+        public void setAllowedOrigins(List<String> allowedOrigins) {
+            this.allowedOrigins = allowedOrigins;
+        }
     }
 }

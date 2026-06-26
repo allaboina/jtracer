@@ -9,4 +9,8 @@ import com.jtracer.dto.collector.LanDeviceRawDto;
 public interface DeviceIdentityResolver {
 
     DeviceIdentityResultDto resolveIdentity(LanDeviceRawDto rawDevice);
+
+    default DeviceIdentityResultDto resolveIdentity(LanDeviceRawDto rawDevice, String userLabel) {
+        return resolveIdentity(rawDevice);
+    }
 }

@@ -18,15 +18,19 @@ JTracer correlates **system performance**, **outbound network connections**, and
 | **Process** | CPU, memory, RSS, disk, battery via host collectors | Phase 2 ✅ |
 | **Network** | TCP/UDP connections, reverse DNS, process correlation | Phase 3 ✅ |
 | **LAN** | ARP-based device discovery, online/offline tracking | Phase 4 ✅ |
-| **API + UI** | REST/WebSocket, React dashboard | Phases 6–8 |
+| **Device identity** | OUI lookup, rule engine, user labels | Phase 5 ✅ |
+| **API** | REST `/api/v1/*` (health live; more endpoints in progress) | Phase 6 🚧 |
+| **UI** | React dashboard | Phase 8 (planned) |
 
 **Design principles:** local-first · metadata-only · adapter-based cross-platform · evidence-backed insights
+
+> **Your data:** In `LIVE` capture mode, API responses reflect **real data from your Mac** — processes, connections, and LAN devices observed by host-native collectors and stored in local SQLite. No cloud sync, no synthetic fallback.
 
 ---
 
 ## Architecture
 
-Host-native collectors observe the real operating system. A Spring Boot backend normalizes snapshots into SQLite; a React dashboard (planned) exposes investigation views.
+Host-native collectors observe the real operating system. A Spring Boot backend normalizes snapshots into SQLite and exposes a REST API; a React dashboard (planned) will consume that API.
 
 ```mermaid
 flowchart TB
@@ -34,24 +38,29 @@ flowchart TB
         PS[Process Collector<br/>ps · df · pmset]
         LSOF[Network Collector<br/>lsof · reverse DNS]
         ARP[LAN Scanner<br/>arp · ping]
+        ID[Identity Resolver<br/>OUI · rules · labels]
     end
 
     subgraph backend [Spring Boot Backend — Java 21]
         COORD[Collector Coordinator]
         PERSIST[Persistence Services]
-        DB[(SQLite)]
+        DB[(SQLite Flyway V1–V4)]
+        API[REST API /api/v1]
     end
 
-    subgraph future [Planned]
-        API[REST / WebSocket API]
-        UI[React Dashboard]
+    subgraph clients [Clients]
+        CURL[curl / scripts]
+        UI[React Dashboard — planned]
     end
 
     PS --> COORD
     LSOF --> COORD
     ARP --> COORD
+    ARP --> ID --> PERSIST
     COORD --> PERSIST --> DB
-    DB --> API --> UI
+    DB --> API
+    API --> CURL
+    API --> UI
 ```
 
 Full design narrative: [docs/SYSTEM_DESIGN.md](docs/SYSTEM_DESIGN.md) · Mermaid source: [docs/diagrams/system-design.mmd](docs/diagrams/system-design.mmd)
@@ -64,28 +73,47 @@ ObservedProcess  →  NetworkConnection  →  RemoteEndpoint / DomainIdentity
                                          LanDevice  →  DeviceIdentity
 ```
 
+### Persistence abstraction (future)
+
+```text
+PersistenceProvider
+├── LocalSQLitePersistenceProvider   # MVP / default (active)
+├── TursoPersistenceProvider         # future cloud/sync
+└── PostgresPersistenceProvider      # future team/server mode
+```
+
 ---
 
 ## Capabilities
 
-### Process monitoring (Phase 2)
+### Process monitoring (Phase 2 ✅)
 - Running process inventory with PID, command line, executable path
 - CPU %, memory %, RSS samples on configurable poll interval (default 5s)
 - System health snapshots: disk usage, memory, battery
 
-### Network tracking (Phase 3)
+### Network tracking (Phase 3 ✅)
 - TCP/UDP connection metadata via `lsof` (no payloads, no HTTPS MITM)
 - Remote IP, port, protocol, connection state, direction
 - Reverse DNS with timeout and confidence scoring
 - Process-to-connection correlation by session + PID
 
-### LAN discovery (Phase 4 — designed)
+### LAN discovery (Phase 4 ✅)
 - Subnet discovery via `ifconfig` / route table
-- Device inventory via `arp -a` (60s poll — lightweight cache read)
+- Device inventory via `arp -a` (60s poll)
 - Optional bounded ping to seed ARP for silent hosts
-- Correlation with network connections by IP (no schema merge)
+- Online / offline / new device status tracking
 
-See [docs/PHASE4_DESIGN.md](docs/PHASE4_DESIGN.md).
+### Device identity (Phase 5 ✅)
+- Local OUI vendor lookup (`knowledge-base/oui-vendors.json`)
+- Rule-based classification (`device-rules.json`, `mdns-services.json`)
+- User label override with `CONFIRMED` confidence
+- Evidence-backed display names (e.g. Amazon Echo, Apple iPhone)
+
+### REST API (Phase 6 🚧)
+- `GET /api/v1/system/health` — latest machine health snapshot ✅
+- Standard JSON envelope: `{ success, timestamp, data }`
+- CORS configured for Vite dev server (`localhost:5173`)
+- More endpoints: processes, connections, devices (in progress)
 
 ---
 
@@ -94,11 +122,12 @@ See [docs/PHASE4_DESIGN.md](docs/PHASE4_DESIGN.md).
 | Layer | Technology |
 |-------|------------|
 | Backend | Java 21, Spring Boot 3.4, Maven |
-| Database | SQLite (MVP) → PostgreSQL (future) |
-| Migrations | Flyway |
+| Database | SQLite (MVP) via `LocalSQLitePersistenceProvider` |
+| Migrations | Flyway (V1–V4) |
 | Host collectors | Platform adapters (`ps`, `lsof`, `arp`, `ping`) |
-| Frontend | React, TypeScript, Vite (planned) |
-| API | REST `/api/v1/*`, WebSocket `/ws/live` (planned) |
+| API | REST `/api/v1/*` (Phase 6); WebSocket `/ws/live` (planned) |
+| Frontend | React, TypeScript, Vite (Phase 8) |
+| Optional deploy | Docker Compose (API only; collectors stay on host) |
 
 First platform: **macOS**. Windows/Linux via adapter interfaces without domain model changes.
 
@@ -107,7 +136,7 @@ First platform: **macOS**. Windows/Linux via adapter interfaces without domain m
 ## Repository structure
 
 ```text
-jtracer-observability-engine/
+jtracer/
 ├── backend/
 │   ├── src/main/java/com/jtracer/
 │   │   ├── domain/          # JPA entities and enums
@@ -115,13 +144,17 @@ jtracer-observability-engine/
 │   │   ├── repository/      # Spring Data repositories
 │   │   ├── service/         # Service interfaces
 │   │   ├── collector/
-│   │   │   ├── common/      # Provider interfaces
+│   │   │   ├── common/      # Identity resolver, OUI lookup
 │   │   │   └── macos/parser/# OS output parsers (public)
-│   │   ├── config/          # Spring configuration
-│   │   └── api/             # REST layer (Phase 6)
-│   └── src/main/resources/db/migration/
+│   │   ├── api/             # REST controllers (Phase 6)
+│   │   ├── config/          # Spring configuration, CORS
+│   │   └── persistence/     # PersistenceProvider abstraction
+│   ├── src/main/resources/db/migration/  # Flyway V1–V4
+│   └── Dockerfile
+├── knowledge-base/          # OUI vendors, device rules, mDNS map
 ├── docs/                    # System design, phases, API contract
 ├── config/                  # application.yml.example
+├── docker-compose.yml       # Optional API container
 └── scripts/                 # Public release builder
 ```
 
@@ -136,8 +169,8 @@ jtracer-observability-engine/
 | 2 | macOS process collector | ✅ Complete |
 | 3 | macOS network collector | ✅ Complete |
 | 4 | LAN scanner (ARP, ping) | ✅ Complete |
-| 5 | Device identity engine | Planned |
-| 6 | REST + WebSocket APIs | Planned |
+| 5 | Device identity engine | ✅ Complete |
+| 6 | REST APIs | 🚧 In progress |
 | 7 | Manual validation | Planned |
 | 8 | React dashboard | Planned |
 
@@ -145,76 +178,76 @@ Details: [docs/DEVELOPMENT_PHASES.md](docs/DEVELOPMENT_PHASES.md)
 
 ---
 
-## Validation
+## Getting started
 
-### Automated tests (private workspace)
+### Native development (recommended)
+
+```bash
+# 1. Configuration
+cp config/application.yml.example backend/src/main/resources/application.yml
+mkdir -p data
+
+# 2. Run backend (collectors + API)
+cd backend && mvn spring-boot:run
+
+# 3. After ~10s (first health poll), query live data from YOUR Mac:
+curl -s http://127.0.0.1:8080/api/v1/system/health | python3 -m json.tool
+```
+
+Example response fields: `cpuPct`, `memoryPct`, `activeProcessCount`, `activeConnectionCount`, `onlineLanDeviceCount` — all sourced from host collectors writing to `./data/jtracer-live.db`.
+
+### Tests
 
 ```bash
 cd backend
-mvn test                  # Unit tests (parsers, persistence)
+mvn test                  # Unit tests (parsers, persistence, API)
 mvn test -Plive-tests     # macOS live collector tests
 ```
 
-### Manual validation checklist
+### Optional Docker (API only)
+
+Collectors must still run on the host. Docker shares `./data` with native collectors:
+
+```bash
+docker compose up --build backend
+```
+
+---
+
+## Validation
 
 | Check | Command / action |
 |-------|------------------|
-| Process rows persisted | `sqlite3 data/jtracer-live.db "SELECT COUNT(*) FROM observed_processes;"` |
+| System health API | `curl -s http://127.0.0.1:8080/api/v1/system/health` |
+| Process rows | `sqlite3 data/jtracer-live.db "SELECT COUNT(*) FROM observed_processes;"` |
 | Network connections | `sqlite3 data/jtracer-live.db "SELECT remote_ip, remote_port, state FROM network_connections LIMIT 5;"` |
-| Process correlation | Join `network_connections` → `observed_processes` on PID |
-| Generate traffic | `curl -s https://example.com` then re-query connections |
-
-### Screenshots
-
-Add validation screenshots to [docs/assets/](docs/assets/) for portfolio presentation:
-
-- Collector log output showing persisted snapshots
-- SQLite query results for processes and connections
-- Architecture diagram render
+| LAN devices | `sqlite3 data/jtracer-live.db "SELECT ip_address, hostname, device_type FROM lan_devices;"` |
 
 ---
 
 ## Public vs private code
 
-This repository publishes **architecture, domain model, parsers, interfaces, and schema** — not the full host collector implementation.
+This repository publishes **architecture, domain model, parsers, API controllers, interfaces, knowledge base, and schema** — not the full host collector implementation.
 
 | Public | Private (development workspace) |
 |--------|--------------------------------|
-| Entities, DTOs, enums | `*ServiceImpl`, coordinator |
-| Parser layer + tests | `MacPsCollector`, `MacLsofCollector` |
+| Entities, DTOs, enums, API controllers | `*ServiceImpl`, coordinator |
+| Parser layer + identity resolver + tests | `MacPsCollector`, `MacLsofCollector` |
 | Service interfaces | Live integration tests |
-| Flyway migrations | Local SQLite databases |
+| Flyway migrations, `knowledge-base/` | Local SQLite databases (`data/`) |
 
-Policy: [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md)
-
----
-
-## Getting started
-
-```bash
-# 1. Copy configuration template
-cp config/application.yml.example backend/src/main/resources/application.yml
-
-# 2. Create local data directory (gitignored)
-mkdir -p data
-
-# 3. Run tests (requires full private workspace for persistence tests)
-cd backend && mvn test
-```
-
-> **Note:** A runnable collector stack requires the private implementation layer.
-> The public repo demonstrates design and parser quality; see release policy above.
+Policy: [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md) · Push workflow: `.cursor/skills/jtracer-public-release/`
 
 ---
 
 ## Roadmap
 
-- [x] Phases 0–3: docs, domain, process + network collectors
-- [ ] Phase 4: LAN discovery engine
-- [ ] Phase 5: Device identity (OUI, rules, user labels)
-- [ ] Phase 6–8: APIs, validation, dashboard
+- [x] Phases 0–5: docs, domain, collectors, LAN, device identity
+- [x] Phase 6 started: `GET /api/v1/system/health`, CORS, Docker Compose skeleton
+- [ ] Phase 6 remainder: processes, connections, devices, insights APIs
+- [ ] Phase 7–8: validation gate, React dashboard
 - [ ] Cross-platform adapters (Windows, Linux)
-- [ ] Optional: native agent extraction, Kubernetes control plane
+- [ ] Optional: Turso / Postgres persistence providers
 
 ---
 
@@ -225,9 +258,9 @@ cd backend && mvn test
 | [SYSTEM_DESIGN.md](docs/SYSTEM_DESIGN.md) | Consolidated architecture |
 | [DEVELOPMENT_PHASES.md](docs/DEVELOPMENT_PHASES.md) | Phase-wise build plan |
 | [PHASE4_DESIGN.md](docs/PHASE4_DESIGN.md) | LAN discovery design |
+| [DEVICE_IDENTITY_KNOWLEDGE_BASE.md](docs/DEVICE_IDENTITY_KNOWLEDGE_BASE.md) | Identity rules and signals |
 | [ENTITY_DESIGN.md](docs/ENTITY_DESIGN.md) | Domain model |
 | [API_CONTRACT.md](docs/API_CONTRACT.md) | REST/WebSocket spec |
-| [DATA_SOURCES.md](docs/DATA_SOURCES.md) | Approved OS data sources |
 | [PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md) | Public code policy |
 
 ---

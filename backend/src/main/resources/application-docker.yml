@@ -1,0 +1,14 @@
+server:
+  address: 0.0.0.0
+
+spring:
+  datasource:
+    url: jdbc:sqlite:/app/data/jtracer-live.db?busy_timeout=30000
+
+jtracer:
+  database:
+    live-path: /app/data/jtracer-live.db
+  knowledge-base:
+    base-path: /app/knowledge-base
+  collector:
+    auto-start: false

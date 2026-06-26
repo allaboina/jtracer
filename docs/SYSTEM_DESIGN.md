@@ -352,15 +352,15 @@ Knowledge base (read-only at runtime):
 
 Aligned with [DEVELOPMENT_PHASES.md](./DEVELOPMENT_PHASES.md):
 
-| Phase | Focus | Key deliverables |
-|-------|-------|------------------|
-| **0** | Foundation | Documentation set (complete) |
-| **1** | Domain + DB | Entities, migrations, repositories |
-| **2** | macOS process collector | `ps`, `df`, `pmset` adapters |
-| **3** | macOS network collector | `lsof` parser, domain resolver, process correlation |
-| **4** | LAN scanner | Ping sweep, ARP parser, device status |
-| **5** | Device intelligence | OUI DB, rule engine, confidence scoring |
-| **6** | Backend API | REST `/api/v1/*`, WebSocket `/ws/live` |
+| Phase | Focus | Key deliverables | Status |
+|-------|-------|------------------|--------|
+| **0** | Foundation | Documentation set | ✅ Complete |
+| **1** | Domain + DB | Entities, migrations, repositories | ✅ Complete |
+| **2** | macOS process collector | `ps`, `df`, `pmset` adapters | ✅ Complete |
+| **3** | macOS network collector | `lsof` parser, domain resolver, process correlation | ✅ Complete |
+| **4** | LAN scanner | Ping sweep, ARP parser, device status | ✅ Complete |
+| **5** | Device intelligence | OUI DB, rule engine, confidence scoring | ✅ Complete |
+| **6** | Backend API | REST `/api/v1/*`, WebSocket `/ws/live` | 🚧 In progress |
 | **7** | Validation | Manual tests before any UI work |
 | **8** | MVP dashboard | React pages per API contract |
 | **9** | Insight engine | Evidence-based rule summaries |
@@ -414,7 +414,7 @@ All intervals must be configurable via `application.yml`.
 
 **Decision:** MVP starts with hostname resolution, ARP lookup, and OUI vendor lookup only.
 
-Full Bonjour/mDNS service discovery is deferred to a Phase 5 enhancement after the core LAN scanner and device identity pipeline are stable.
+Full Bonjour/mDNS service discovery remains a future enhancement; Phase 5 applies bundled mDNS rules when `mdnsName` is available from discovery.
 
 ### 4. Database retention
 
@@ -459,6 +459,32 @@ Avoid privileged DaemonSet deployments unless the product pivots to enterprise o
 
 ---
 
+## Persistence Abstraction (Future)
+
+JTracer persistence is designed behind a provider abstraction so the MVP local SQLite file can evolve without rewriting collectors or services.
+
+```text
+PersistenceProvider (interface)
+├── LocalSQLitePersistenceProvider   # MVP / default — single-host file DB
+├── TursoPersistenceProvider         # future cloud/sync option (libSQL edge replica)
+└── PostgresPersistenceProvider      # future team/server mode (multi-user, retention at scale)
+```
+
+| Provider | Use case | MVP status |
+|----------|----------|------------|
+| `LocalSQLitePersistenceProvider` | Default laptop install; `jtracer-live.db` on disk | **Active** (Spring Data JPA + Flyway + SQLite) |
+| `TursoPersistenceProvider` | Optional sync across devices; edge-hosted libSQL | Planned |
+| `PostgresPersistenceProvider` | Docker Compose / K8s control plane; shared team DB | Planned |
+
+**Design rules:**
+
+- Collectors and identity resolution remain storage-agnostic; only repository/persistence services bind to a provider.
+- Provider selection via `jtracer.persistence.provider` in `application.yml` (default: `local-sqlite`).
+- Migrations stay Flyway-compatible; Postgres provider may use dialect-specific variants later.
+- No provider may send observability data to the cloud by default.
+
+---
+
 ## Implementation Status
 
 | Milestone | Status |
@@ -467,9 +493,12 @@ Avoid privileged DaemonSet deployments unless the product pivots to enterprise o
 | Phase 2 — macOS process collector | ✅ Complete |
 | Phase 3 — macOS network collector | ✅ Complete |
 | Phase 4 — LAN scanner | ✅ Complete |
-| Phase 5 — Device identity engine | Planned |
+| Phase 5 — Device identity engine | ✅ Complete |
+| Phase 6 — Backend API | 🚧 In progress (`GET /api/v1/system/health`) |
 
-**Validated:** `mvn test` (unit), `mvn test -Plive-tests` (macOS live collectors).
+**Validated:** `mvn test` (38 unit tests), `mvn test -Plive-tests` (macOS live collectors), manual `curl` against live host data.
+
+**Runtime:** Data in API responses comes from **your machine** — host collectors read real `ps`, `lsof`, and `arp` output and persist to local SQLite (`./data/jtracer-live.db`). Nothing is synthetic in LIVE mode.
 
 ---
 

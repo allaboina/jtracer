@@ -1,0 +1,124 @@
+{
+  "rules": [
+    {
+      "ruleName": "Amazon Echo",
+      "vendorContains": ["Amazon"],
+      "hostnameContains": ["echo", "alexa"],
+      "mdnsContains": ["_amzn-wplay"],
+      "deviceType": "SMART_SPEAKER",
+      "displayName": "Amazon Echo",
+      "confidenceScore": 90,
+      "priority": 100
+    },
+    {
+      "ruleName": "Amazon Fire TV",
+      "vendorContains": ["Amazon"],
+      "hostnameContains": ["firetv", "fire-tv", "aft"],
+      "deviceType": "STREAMING_DEVICE",
+      "displayName": "Amazon Fire TV",
+      "confidenceScore": 88,
+      "priority": 95
+    },
+    {
+      "ruleName": "Apple iPhone",
+      "vendorContains": ["Apple"],
+      "hostnameContains": ["iphone"],
+      "mdnsContains": ["_airplay", "_raop"],
+      "deviceType": "PHONE",
+      "displayName": "Apple iPhone",
+      "confidenceScore": 88,
+      "priority": 90
+    },
+    {
+      "ruleName": "Apple TV",
+      "vendorContains": ["Apple"],
+      "hostnameContains": ["appletv", "apple-tv"],
+      "mdnsContains": ["_airplay"],
+      "deviceType": "TV",
+      "displayName": "Apple TV",
+      "confidenceScore": 90,
+      "priority": 90
+    },
+    {
+      "ruleName": "MacBook",
+      "vendorContains": ["Apple"],
+      "hostnameContains": ["macbook", "macbookpro", "macbookair"],
+      "deviceType": "LAPTOP",
+      "displayName": "MacBook",
+      "confidenceScore": 85,
+      "priority": 85
+    },
+    {
+      "ruleName": "Roku Device",
+      "vendorContains": ["Roku"],
+      "hostnameContains": ["roku"],
+      "deviceType": "STREAMING_DEVICE",
+      "displayName": "Roku",
+      "confidenceScore": 88,
+      "priority": 85
+    },
+    {
+      "ruleName": "Google Chromecast",
+      "vendorContains": ["Google"],
+      "hostnameContains": ["chromecast", "google-home", "nest"],
+      "mdnsContains": ["_googlecast"],
+      "deviceType": "STREAMING_DEVICE",
+      "displayName": "Google Chromecast",
+      "confidenceScore": 90,
+      "priority": 85
+    },
+    {
+      "ruleName": "HP Printer",
+      "vendorContains": ["Hewlett Packard", "HP"],
+      "hostnameContains": ["hp", "printer"],
+      "mdnsContains": ["_ipp", "_printer"],
+      "deviceType": "PRINTER",
+      "displayName": "HP Printer",
+      "confidenceScore": 85,
+      "priority": 80
+    },
+    {
+      "ruleName": "Sony TV",
+      "vendorContains": ["Sony"],
+      "hostnameContains": ["sony", "bravia"],
+      "deviceType": "TV",
+      "displayName": "Sony TV",
+      "confidenceScore": 82,
+      "priority": 75
+    },
+    {
+      "ruleName": "Samsung TV",
+      "vendorContains": ["Samsung"],
+      "hostnameContains": ["samsung", "tizen"],
+      "deviceType": "TV",
+      "displayName": "Samsung TV",
+      "confidenceScore": 80,
+      "priority": 75
+    },
+    {
+      "ruleName": "Xbox",
+      "vendorContains": ["Microsoft"],
+      "hostnameContains": ["xbox"],
+      "deviceType": "GAME_CONSOLE",
+      "displayName": "Xbox",
+      "confidenceScore": 88,
+      "priority": 80
+    },
+    {
+      "ruleName": "Apple Device (vendor only)",
+      "vendorContains": ["Apple"],
+      "deviceType": "UNKNOWN",
+      "displayName": "Apple Device",
+      "confidenceScore": 50,
+      "priority": 10
+    },
+    {
+      "ruleName": "Amazon Device (vendor only)",
+      "vendorContains": ["Amazon"],
+      "deviceType": "IOT",
+      "displayName": "Amazon Device",
+      "confidenceScore": 50,
+      "priority": 10
+    }
+  ]
+}

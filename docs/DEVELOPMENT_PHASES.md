@@ -11,8 +11,8 @@
 | 2 | macOS process collector | ✅ Complete |
 | 3 | macOS network collector | ✅ Complete |
 | 4 | LAN scanner | ✅ Complete |
-| 5 | Device identity engine | Planned |
-| 6 | Backend API | Planned |
+| 5 | Device identity engine | ✅ Complete |
+| 6 | Backend API | 🚧 In progress |
 | 7 | Validation (pre-UI) | Planned |
 | 8 | React dashboard | Planned |
 

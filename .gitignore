@@ -3,6 +3,10 @@
 # Public subset is built via scripts/prepare-public-release.sh
 # =============================================================================
 
+# Docker local data (bind mounts / compose volumes)
+docker-data/
+.docker-data/
+
 # Local runtime data (SQLite, session DBs)
 data/
 *.db
@@ -14,6 +18,7 @@ data/
 
 # Environment and machine-specific config
 .env
+.env.local
 .env.*
 !.env.example
 **/application-local.yml

@@ -1,0 +1,46 @@
+{
+  "services": [
+    {
+      "serviceName": "_airplay._tcp",
+      "deviceType": "TV",
+      "displayName": "Apple AirPlay Device",
+      "confidenceScore": 90
+    },
+    {
+      "serviceName": "_raop._tcp",
+      "deviceType": "SMART_SPEAKER",
+      "displayName": "Apple Audio Device",
+      "confidenceScore": 85
+    },
+    {
+      "serviceName": "_googlecast._tcp",
+      "deviceType": "STREAMING_DEVICE",
+      "displayName": "Chromecast",
+      "confidenceScore": 90
+    },
+    {
+      "serviceName": "_amzn-wplay._tcp",
+      "deviceType": "SMART_SPEAKER",
+      "displayName": "Amazon Smart Device",
+      "confidenceScore": 90
+    },
+    {
+      "serviceName": "_ipp._tcp",
+      "deviceType": "PRINTER",
+      "displayName": "Network Printer",
+      "confidenceScore": 88
+    },
+    {
+      "serviceName": "_printer._tcp",
+      "deviceType": "PRINTER",
+      "displayName": "Network Printer",
+      "confidenceScore": 85
+    },
+    {
+      "serviceName": "_homekit._tcp",
+      "deviceType": "SMART_HOME",
+      "displayName": "HomeKit Device",
+      "confidenceScore": 85
+    }
+  ]
+}
