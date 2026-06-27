@@ -111,9 +111,17 @@ PersistenceProvider
 
 ### REST API (Phase 6 🚧)
 - `GET /api/v1/system/health` — latest machine health snapshot ✅
+- `GET /api/v1/processes` — running processes with CPU/memory/connection counts ✅
+- `GET /api/v1/processes/{id}` — process detail ✅
+- `GET /api/v1/processes/{id}/metrics` — metric history ✅
+- `GET /api/v1/processes/{id}/connections` — active connections for process ✅
+- `GET /api/v1/connections` — active connections ✅
+- `GET /api/v1/domains` — domain frequency summary ✅
+- `GET /api/v1/devices` — LAN devices with identity ✅
+- `GET /api/v1/devices/{id}` — device detail ✅
+- `POST /api/v1/devices/{id}/label` — user label override ✅
 - Standard JSON envelope: `{ success, timestamp, data }`
 - CORS configured for Vite dev server (`localhost:5173`)
-- More endpoints: processes, connections, devices (in progress)
 
 ---
 
@@ -192,6 +200,10 @@ cd backend && mvn spring-boot:run
 
 # 3. After ~10s (first health poll), query live data from YOUR Mac:
 curl -s http://127.0.0.1:8080/api/v1/system/health | python3 -m json.tool
+curl -s "http://127.0.0.1:8080/api/v1/processes?sort=cpu&limit=10" | python3 -m json.tool
+curl -s http://127.0.0.1:8080/api/v1/connections | python3 -m json.tool
+curl -s http://127.0.0.1:8080/api/v1/domains?sort=frequency | python3 -m json.tool
+curl -s http://127.0.0.1:8080/api/v1/devices | python3 -m json.tool
 ```
 
 Example response fields: `cpuPct`, `memoryPct`, `activeProcessCount`, `activeConnectionCount`, `onlineLanDeviceCount` — all sourced from host collectors writing to `./data/jtracer-live.db`.
@@ -219,6 +231,10 @@ docker compose up --build backend
 | Check | Command / action |
 |-------|------------------|
 | System health API | `curl -s http://127.0.0.1:8080/api/v1/system/health` |
+| Top CPU processes | `curl -s "http://127.0.0.1:8080/api/v1/processes?sort=cpu&limit=10"` |
+| Active connections | `curl -s http://127.0.0.1:8080/api/v1/connections` |
+| Domain summary | `curl -s "http://127.0.0.1:8080/api/v1/domains?sort=frequency"` |
+| LAN devices | `curl -s http://127.0.0.1:8080/api/v1/devices` |
 | Process rows | `sqlite3 data/jtracer-live.db "SELECT COUNT(*) FROM observed_processes;"` |
 | Network connections | `sqlite3 data/jtracer-live.db "SELECT remote_ip, remote_port, state FROM network_connections LIMIT 5;"` |
 | LAN devices | `sqlite3 data/jtracer-live.db "SELECT ip_address, hostname, device_type FROM lan_devices;"` |
@@ -243,8 +259,8 @@ Policy: [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md) · Push workflow: `.cur
 ## Roadmap
 
 - [x] Phases 0–5: docs, domain, collectors, LAN, device identity
-- [x] Phase 6 started: `GET /api/v1/system/health`, CORS, Docker Compose skeleton
-- [ ] Phase 6 remainder: processes, connections, devices, insights APIs
+- [x] Phase 6 started: full read API surface except snapshots/insights/WebSocket
+- [ ] Phase 6 remainder: `GET /api/v1/system/snapshots`, `GET /api/v1/insights`, WebSocket
 - [ ] Phase 7–8: validation gate, React dashboard
 - [ ] Cross-platform adapters (Windows, Linux)
 - [ ] Optional: Turso / Postgres persistence providers
@@ -261,6 +277,7 @@ Policy: [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md) · Push workflow: `.cur
 | [DEVICE_IDENTITY_KNOWLEDGE_BASE.md](docs/DEVICE_IDENTITY_KNOWLEDGE_BASE.md) | Identity rules and signals |
 | [ENTITY_DESIGN.md](docs/ENTITY_DESIGN.md) | Domain model |
 | [API_CONTRACT.md](docs/API_CONTRACT.md) | REST/WebSocket spec |
+| [API_TESTING_GUIDE.md](docs/API_TESTING_GUIDE.md) | curl + Postman testing walkthrough |
 | [PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md) | Public code policy |
 
 ---
