@@ -12,4 +12,6 @@ public interface ObservedProcessRepository extends JpaRepository<ObservedProcess
             String sessionId, Integer pid, ProcessStatus status);
 
     List<ObservedProcess> findBySession_IdAndStatus(String sessionId, ProcessStatus status);
+
+    Optional<ObservedProcess> findByIdAndSession_Id(String id, String sessionId);
 }
