@@ -1,6 +1,7 @@
 package com.jtracer.api.v1.mapper;
 
 import com.jtracer.api.v1.dto.SystemHealthDataDto;
+import com.jtracer.api.v1.dto.SystemHealthSnapshotPointDto;
 import com.jtracer.domain.entity.SystemHealthSnapshot;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,17 @@ public class SystemHealthMapper {
         dto.setActiveProcessCount(snapshot.getActiveProcessCount());
         dto.setActiveConnectionCount(snapshot.getActiveConnectionCount());
         dto.setOnlineLanDeviceCount(snapshot.getOnlineLanDeviceCount());
+        return dto;
+    }
+
+    public SystemHealthSnapshotPointDto toSnapshotPoint(SystemHealthSnapshot snapshot) {
+        SystemHealthSnapshotPointDto dto = new SystemHealthSnapshotPointDto();
+        dto.setTimestamp(snapshot.getSampledAt());
+        dto.setCpuPct(snapshot.getTotalCpuPct());
+        dto.setMemoryPct(snapshot.getTotalMemoryPct());
+        dto.setDiskUsagePct(snapshot.getDiskUsagePct());
+        dto.setActiveProcessCount(snapshot.getActiveProcessCount());
+        dto.setActiveConnectionCount(snapshot.getActiveConnectionCount());
         return dto;
     }
 }

@@ -6,7 +6,9 @@ import com.jtracer.api.v1.dto.ProcessConnectionDto;
 import com.jtracer.api.v1.dto.ProcessDetailDto;
 import com.jtracer.api.v1.dto.ProcessMetricPointDto;
 import com.jtracer.api.v1.dto.ProcessSummaryDto;
+import com.jtracer.api.v1.dto.InsightSummaryDto;
 import com.jtracer.domain.entity.DomainIdentity;
+import com.jtracer.domain.entity.Insight;
 import com.jtracer.domain.entity.LanDevice;
 import com.jtracer.domain.entity.NetworkConnection;
 import com.jtracer.domain.entity.ObservedProcess;
@@ -144,5 +146,17 @@ public class ApiMapper {
             return device.getHostname();
         }
         return "Unknown Device";
+    }
+
+    public InsightSummaryDto toInsightSummary(Insight insight) {
+        InsightSummaryDto dto = new InsightSummaryDto();
+        dto.setInsightId(insight.getId());
+        dto.setEntityType(insight.getEntityType());
+        dto.setEntityId(insight.getEntityId());
+        dto.setSeverity(insight.getSeverity());
+        dto.setTitle(insight.getTitle());
+        dto.setExplanation(insight.getExplanation());
+        dto.setGeneratedAt(insight.getGeneratedAt());
+        return dto;
     }
 }

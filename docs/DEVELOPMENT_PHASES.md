@@ -12,8 +12,8 @@
 | 3 | macOS network collector | ✅ Complete |
 | 4 | LAN scanner | ✅ Complete |
 | 5 | Device identity engine | ✅ Complete |
-| 6 | Backend API | 🚧 Nearly complete |
-| 7 | Validation (pre-UI) | Planned |
+| 6 | Backend API | ✅ Complete |
+| 7 | Validation (pre-UI) | 🚧 In progress |
 | 8 | React dashboard | Planned |
 
 Public repository publishes architecture, domain model, parsers, and interfaces.
