@@ -231,10 +231,13 @@ docker compose up --build backend
 | Check | Command / action |
 |-------|------------------|
 | System health API | `curl -s http://127.0.0.1:8080/api/v1/system/health` |
+| Health history | `curl -s "http://127.0.0.1:8080/api/v1/system/snapshots?minutes=60"` |
 | Top CPU processes | `curl -s "http://127.0.0.1:8080/api/v1/processes?sort=cpu&limit=10"` |
 | Active connections | `curl -s http://127.0.0.1:8080/api/v1/connections` |
 | Domain summary | `curl -s "http://127.0.0.1:8080/api/v1/domains?sort=frequency"` |
 | LAN devices | `curl -s http://127.0.0.1:8080/api/v1/devices` |
+| Insights | `curl -s http://127.0.0.1:8080/api/v1/insights` |
+| Full test tracker | [docs/API_TESTING_CHECKLIST.md](docs/API_TESTING_CHECKLIST.md) |
 | Process rows | `sqlite3 data/jtracer-live.db "SELECT COUNT(*) FROM observed_processes;"` |
 | Network connections | `sqlite3 data/jtracer-live.db "SELECT remote_ip, remote_port, state FROM network_connections LIMIT 5;"` |
 | LAN devices | `sqlite3 data/jtracer-live.db "SELECT ip_address, hostname, device_type FROM lan_devices;"` |
@@ -259,9 +262,8 @@ Policy: [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md) · Push workflow: `.cur
 ## Roadmap
 
 - [x] Phases 0–5: docs, domain, collectors, LAN, device identity
-- [x] Phase 6 started: full read API surface except snapshots/insights/WebSocket
-- [ ] Phase 6 remainder: `GET /api/v1/system/snapshots`, `GET /api/v1/insights`, WebSocket
-- [ ] Phase 7–8: validation gate, React dashboard
+- [x] Phase 6: REST APIs, WebSocket `/ws/live`, snapshots, insights read API
+- [ ] Phase 7: validation gate (see [docs/PHASE7_VALIDATION.md](docs/PHASE7_VALIDATION.md))
 - [ ] Cross-platform adapters (Windows, Linux)
 - [ ] Optional: Turso / Postgres persistence providers
 
@@ -278,6 +280,8 @@ Policy: [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md) · Push workflow: `.cur
 | [ENTITY_DESIGN.md](docs/ENTITY_DESIGN.md) | Domain model |
 | [API_CONTRACT.md](docs/API_CONTRACT.md) | REST/WebSocket spec |
 | [API_TESTING_GUIDE.md](docs/API_TESTING_GUIDE.md) | curl + Postman testing walkthrough |
+| [API_TESTING_CHECKLIST.md](docs/API_TESTING_CHECKLIST.md) | Step-by-step test tracker (work at your own pace) |
+| [PHASE7_VALIDATION.md](docs/PHASE7_VALIDATION.md) | Pre-UI data correctness validation runbook |
 | [PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md) | Public code policy |
 
 ---

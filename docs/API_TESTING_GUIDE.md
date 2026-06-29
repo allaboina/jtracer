@@ -3,6 +3,8 @@
 Hands-on guide for testing JTracer REST APIs with **curl** and **Postman**.  
 Written for first-time API testers who want to understand how requests flow in a real product.
 
+**Start here if you want a checklist:** [API_TESTING_CHECKLIST.md](./API_TESTING_CHECKLIST.md) — step-by-step tracker you can work through over multiple sessions.
+
 ---
 
 ## 1. How JTracer APIs work (mental model)
@@ -123,6 +125,20 @@ curl -s http://127.0.0.1:8080/api/v1/system/health | python3 -m json.tool
 **What to verify:** `data.cpuPct`, `data.activeProcessCount`, `data.onlineLanDeviceCount` match your Mac activity.
 
 **Trace in code:** `SystemController` → `SystemHealthQueryService` → `system_health_snapshots` table.
+
+---
+
+### Step 1b — System health history (time series)
+
+**Path:** `GET /api/v1/system/snapshots`
+
+```bash
+curl -s "http://127.0.0.1:8080/api/v1/system/snapshots?minutes=60" | python3 -m json.tool
+```
+
+**What to verify:** `data` is an array of `{ timestamp, cpuPct, memoryPct }` points. More points appear as health collector runs (~every 10s).
+
+**Tracker:** See [API_TESTING_CHECKLIST.md](./API_TESTING_CHECKLIST.md) for a full checkbox list.
 
 ---
 

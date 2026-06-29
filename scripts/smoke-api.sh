@@ -15,10 +15,12 @@ echo "JTracer API smoke test → ${BASE}"
 echo ""
 
 check "/api/v1/system/health"
+check "/api/v1/system/snapshots?minutes=60"
 check "/api/v1/processes?limit=3"
 check "/api/v1/connections"
 check "/api/v1/domains"
 check "/api/v1/devices"
+check "/api/v1/insights"
 
 echo ""
 echo "Done. Expect HTTP 200 (health may be 503 in first 10s after startup)."
