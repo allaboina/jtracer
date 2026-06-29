@@ -3,7 +3,13 @@
 set -euo pipefail
 
 BASE="${1:-http://127.0.0.1:8080}"
-DB="${2:-./data/jtracer-live.db}"
+if [[ -f "./data/jtracer-live.db" ]]; then
+  DB="${2:-./data/jtracer-live.db}"
+elif [[ -f "./backend/data/jtracer-live.db" ]]; then
+  DB="${2:-./backend/data/jtracer-live.db}"
+else
+  DB="${2:-./data/jtracer-live.db}"
+fi
 PASS=0
 FAIL=0
 SKIP=0
@@ -60,16 +66,17 @@ else
   skip "A1 DB not found at ${DB}"
 fi
 
-# A2 Top CPU non-zero
-top_cpu=$(json_field "/api/v1/processes?sort=cpu&limit=1" "
+# A2 Top CPU non-zero (skip shell/meta processes without metrics)
+top_cpu=$(json_field "/api/v1/processes?sort=cpu&limit=10" "
 import sys,json
 d=json.load(sys.stdin).get('data',[])
-print(d[0].get('cpuPct',0) if d else 0)
+vals=[p.get('cpuPct') for p in d if p.get('cpuPct') is not None]
+print(vals[0] if vals else '')
 ")
-if python3 -c "import sys; v=float(sys.argv[1]); sys.exit(0 if v>=0 else 1)" "$top_cpu" 2>/dev/null; then
+if [[ -n "$top_cpu" ]]; then
   ok "A2 Top process returns cpuPct (${top_cpu})"
 else
-  bad "A2 Top process cpuPct missing"
+  bad "A2 No process with cpuPct in top 10 (wait for metric poll)"
 fi
 
 # B1 Connections
